@@ -1,4 +1,4 @@
-namespace AccessControlHub.Api.Models;
+namespace AccessControlHub.Domain.Entities;
 
 public class User
 {

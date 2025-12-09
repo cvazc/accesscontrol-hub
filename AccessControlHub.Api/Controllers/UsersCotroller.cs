@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using AccessControlHub.Api.Models;
+using AccessControlHub.Domain.Entities;
 
 namespace AccessControlHub.Api.Controllers;
 
