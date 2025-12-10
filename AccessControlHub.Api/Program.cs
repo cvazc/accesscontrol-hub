@@ -1,10 +1,13 @@
-using AccessControlHub.Api.Models;
+using AccessControlHub.Application.Interfaces;
+using AccessControlHub.Application.Services;
+using AccessControlHub.Domain.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 

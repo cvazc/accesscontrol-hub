@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using AccessControlHub.Domain.Entities;
+using AccessControlHub.Application.Interfaces;
+using AccessControlHub.Application.Dtos.Users;
 
 namespace AccessControlHub.Api.Controllers;
 
@@ -7,23 +8,25 @@ namespace AccessControlHub.Api.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private static List<User> _users = new List<User>()
+    private readonly IUserService _userService;
+
+    public UsersController(IUserService userService)
     {
-        new User { Id = 1, Name = "John Doe", Email = "john@example.com" },
-        new User { Id = 2, Name = "Jane Smith", Email = "jane@example.com" }
-    };
+        _userService = userService;
+    }
 
     [HttpGet]
-    public ActionResult<List<User>> GetAll()
+    public async Task<ActionResult<List<UserResponseDto>>> GetAll()
     {
-        return Ok(_users);
+        var users = _userService.GetAllAsync();
+        return Ok(users);
     }
 
     [HttpGet("{id}")]
-    public ActionResult<User> GetById(int id)
+    public async Task<ActionResult<UserResponseDto>> GetById(int id)
     {
-        var user = _users.FirstOrDefault(u => u.Id == id);
-        
+        var user = await _userService.GetByIdAsync(id);
+
         if (user is null)
         {
             return NotFound();
@@ -33,43 +36,35 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<User> Create(User newUser)
+    public async Task<ActionResult<UserResponseDto>> Create(CreateUserDto input)
     {
-        var newId = _users.Count == 0 ? 1 : _users.Max(u => u.Id) + 1;
-        newUser.Id = newId;
+        var createdUser = await _userService.CreateAsync(input);
 
-        _users.Add(newUser);
-
-        return CreatedAtAction(nameof(GetById), new { id = newUser.Id }, newUser);
+        return CreatedAtAction(nameof(GetById), new { id = createdUser.Id }, createdUser);
     }
 
     [HttpPut("{id}")]
-    public ActionResult<User> Update(int id, User updatedUser)
+    public async Task<ActionResult<UserResponseDto>> Update(int id, UpdateUserDto input)
     {
-        var user = _users.FirstOrDefault(u => u.Id == id);
+        var updatedUser = await _userService.UpdateAsync(id, input);
 
-        if (user is null)
+        if (updatedUser is null)
         {
             return NotFound();
         }
 
-        user.Name = updatedUser.Name;
-        user.Email = updatedUser.Email;
-
-        return Ok(user);
+        return Ok(updatedUser);
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var user = _users.FirstOrDefault(u => u.Id == id);
+        var deleted = await _userService.DeleteAsync(id);
 
-        if (user is null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        _users.Remove(user);
 
         return Ok();
     }
