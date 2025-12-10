@@ -4,10 +4,14 @@ using AccessControlHub.Domain.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration
+    .AddJsonFile("appsettings.Development.Local.json", optional: true, reloadOnChange: true);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IUserService, UserService>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 var app = builder.Build();
 
