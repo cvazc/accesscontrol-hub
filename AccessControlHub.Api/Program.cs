@@ -1,17 +1,27 @@
 using AccessControlHub.Application.Interfaces;
 using AccessControlHub.Application.Services;
 using AccessControlHub.Domain.Repositories;
+using AccessControlHub.Infrastructure.Data;
+using AccessControlHub.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration
     .AddJsonFile("appsettings.Development.Local.json", optional: true, reloadOnChange: true);
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<AccessControlHubDbContext>(options => {
+    options.UseSqlServer(connectionString);
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IUserService, UserService>();
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 var app = builder.Build();
 
