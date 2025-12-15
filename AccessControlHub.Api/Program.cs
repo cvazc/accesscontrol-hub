@@ -5,6 +5,10 @@ using AccessControlHub.Infrastructure.Data;
 using AccessControlHub.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using AccessControlHub.Api.Middlewares;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using AccessControlHub.Application.Validators.Users;
+using AccessControlHub.Api.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +20,19 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<AccessControlHubDbContext>(options => {
+builder.Services.AddDbContext<AccessControlHubDbContext>(options =>
+{
     options.UseSqlServer(connectionString);
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
+builder.Services.AddFluentValidationAutoValidation();
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
