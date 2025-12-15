@@ -4,6 +4,7 @@ using AccessControlHub.Domain.Entities;
 using AccessControlHub.Domain.Repositories;
 using System.Security.Cryptography;
 using System.Text;
+using AccessControlHub.Domain.Exceptions;
 
 namespace AccessControlHub.Application.Services;
 
@@ -48,13 +49,13 @@ public class UserService : IUserService
     public async Task<UserResponseDto> CreateAsync(CreateUserDto input)
     {
         if (string.IsNullOrWhiteSpace(input.Name))
-            throw new ArgumentException("Name is required");
+            throw new ValidationException("Name is required");
 
         if (string.IsNullOrWhiteSpace(input.Email))
-            throw new ArgumentException("Email is required");
+            throw new ValidationException("Email is required");
 
         if (string.IsNullOrWhiteSpace(input.Password))
-            throw new ArgumentException("Password is required");
+            throw new ValidationException("Password is required");
 
         var passwordHash = HashPassword(input.Password);
 
