@@ -48,15 +48,6 @@ public class UserService : IUserService
 
     public async Task<UserResponseDto> CreateAsync(CreateUserDto input)
     {
-        if (string.IsNullOrWhiteSpace(input.Name))
-            throw new ValidationException("Name is required");
-
-        if (string.IsNullOrWhiteSpace(input.Email))
-            throw new ValidationException("Email is required");
-
-        if (string.IsNullOrWhiteSpace(input.Password))
-            throw new ValidationException("Password is required");
-
         var passwordHash = HashPassword(input.Password);
 
         var newUser = new User
