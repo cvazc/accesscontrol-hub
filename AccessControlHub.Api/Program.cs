@@ -4,6 +4,7 @@ using AccessControlHub.Domain.Repositories;
 using AccessControlHub.Infrastructure.Data;
 using AccessControlHub.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using AccessControlHub.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
