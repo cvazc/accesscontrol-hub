@@ -7,10 +7,14 @@ namespace AccessControlHub.Api.Middlewares;
 public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
+        _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -34,13 +38,16 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            _logger.LogError(ex, "Unhandled exception occurred while processing request.");
+
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             context.Response.ContentType = "application/json";
 
             var response = new
             {
                 error = "InternalServerError",
-                message = "An unexpected error occurred"
+                message = _env.IsDevelopment() ? ex.Message : "An unexpected error occurred",
+                detail = _env.IsDevelopment() ? ex.StackTrace : null
             };
 
             await context.Response.WriteAsync(JsonSerializer.Serialize(response));
