@@ -57,6 +57,12 @@ public class UserService : IUserService
             PasswordHash = passwordHash
         };
 
+        var emailExists = await _userRepository.EmailExistsAsync(input.Email);
+        if (emailExists)
+        {
+            throw new ValidationException("Email already exists");
+        }
+
         var createdUser = await _userRepository.AddAsync(newUser);
 
         return new UserResponseDto
