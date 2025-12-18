@@ -10,6 +10,8 @@ using FluentValidation.AspNetCore;
 using AccessControlHub.Application.Validators.Users;
 using AccessControlHub.Api.Filters;
 using AccessControlHub.Application.Settings;
+using AccessControlHub.Application.Interfaces.Security;
+using AccessControlHub.Application.Services.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,7 @@ builder.Configuration
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
