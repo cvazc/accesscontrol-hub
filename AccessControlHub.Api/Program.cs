@@ -9,6 +9,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using AccessControlHub.Application.Validators.Users;
 using AccessControlHub.Api.Filters;
+using AccessControlHub.Application.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings")
+);
 
 var app = builder.Build();
 
