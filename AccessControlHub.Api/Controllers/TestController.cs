@@ -13,4 +13,11 @@ public class TestController : ControllerBase
     {
         return Ok("You are authenticated!");
     }
+
+    [HttpGet("admin-only")]
+    [Authorize(Roles = "Admin")]
+    public IActionResult AdminOnly()
+    {
+        return Ok("YOu are authorized as Admin");
+    }
 }
