@@ -9,34 +9,17 @@ namespace AccessControlHub.Api.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly ITokenService _tokenService;
+    private readonly IAuthService _authService;
 
-    public AuthController(ITokenService tokenService)
+    public AuthController(IAuthService authService)
     {
-        _tokenService = tokenService;
+        _authService = authService;
     }
 
     [HttpPost("login")]
     public IActionResult Login(LoginRequestDto request)
     {
-        if (request.Email != "admin@accesshub.com" || request.Password != "Password123!")
-        {
-            return Unauthorized("Invalid credentials");
-        }
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, "1"),
-            new Claim(ClaimTypes.Email, request.Email),
-            new Claim(ClaimTypes.Role, "Admin"),
-            new Claim("permission", "users.read")
-        };
-
-        var token = _tokenService.GenerateToken(claims);
-
-        return Ok(new LoginResponseDto
-        {
-            AccessToken = token
-        });
+        var response = _authService.Login(request);
+        return Ok(response);
     }
 }
