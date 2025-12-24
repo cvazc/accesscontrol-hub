@@ -20,4 +20,18 @@ public class TestController : ControllerBase
     {
         return Ok("YOu are authorized as Admin");
     }
+
+    [HttpGet("policy-admin")]
+    [Authorize(Policy = "AdminOnly")]
+    public IActionResult PolicyAdmin()
+    {
+        return Ok("Policy AdminOnly passed!");
+    }
+
+    [HttpGet("policy-users-read")]
+    [Authorize(Policy = "CanReadUsers")]
+    public IActionResult PolicyUsersRead()
+    {
+        return Ok("Policy CanReadUsers passed!");
+    }
 }
