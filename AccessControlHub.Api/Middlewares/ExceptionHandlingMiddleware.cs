@@ -1,4 +1,3 @@
-using AccessControlHub.Domain.Exceptions;
 using System.Net;
 using System.Text.Json;
 
@@ -8,50 +7,45 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    private readonly IHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IHostEnvironment env)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
-        _env = env;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext httpContext)
     {
         try
         {
-            await _next(context);
-        }
-        catch (ValidationException ex)
-        {
-            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-            context.Response.ContentType = "application/json";
-
-            var response = new
-            {
-                error = "ValidationError",
-                message = ex.Message
-            };
-
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            await _next(httpContext);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred while processing request.");
-
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            context.Response.ContentType = "application/json";
-
-            var response = new
-            {
-                error = "InternalServerError",
-                message = _env.IsDevelopment() ? ex.Message : "An unexpected error occurred",
-                detail = _env.IsDevelopment() ? ex.StackTrace : null
-            };
-
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            await HandleExceptionAsync(httpContext, ex);
         }
     }
-}
 
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        var (statusCode, error, message) = exception switch
+        {
+            UnauthorizedAccessException => ((int)HttpStatusCode.Unauthorized, "Unauthorized", exception.Message),
+            _ => ((int)HttpStatusCode.InternalServerError, "InternalServerError", "An unexpected error occurred")
+        };
+
+        _logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = statusCode;
+
+        var response = new
+        {
+            error,
+            message,
+            detail = exception.ToString()
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+    }
+}
