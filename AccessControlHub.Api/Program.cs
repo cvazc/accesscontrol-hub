@@ -15,9 +15,6 @@ using AccessControlHub.Application.Services.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AccessControlHub.Application.Settings;
-using AccessControlHub.Application.Services.Security;
-using AccessControlHub.Application.Interfaces.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +25,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 

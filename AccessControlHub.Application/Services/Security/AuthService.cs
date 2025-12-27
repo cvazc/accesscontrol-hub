@@ -7,15 +7,26 @@ namespace AccessControlHub.Application.Services.Security;
 public class AuthService : IAuthService
 {
     private readonly ITokenService _tokenService;
+    private readonly IPasswordHasher _passwordHasher;
+    private const string MockEmail = "admin@accesshub.com";
+    private const string MockPasswordHash = "$2a$11$t61n3cXxqA1z4ILPj0/Y8eS0tKKmEbxSjFKR4m.kL7oA5B6IkEKiO";
 
-    public AuthService(ITokenService tokenService)
+    public AuthService(ITokenService tokenService, IPasswordHasher passwordHasher)
     {
         _tokenService = tokenService;
+        _passwordHasher = passwordHasher;
     }
 
     public LoginResponseDto Login(LoginRequestDto request)
     {
-        if (request.Email != "admin@accesshub.com" || request.Password != "Password123!")
+        if (!string.Equals(request.Email, MockEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("Invalid credentials");
+        }
+
+        var validPassword = _passwordHasher.VerifyPassword(request.Password, MockPasswordHash);
+
+        if (!validPassword)
         {
             throw new UnauthorizedAccessException("Invalid credentials");
         }
