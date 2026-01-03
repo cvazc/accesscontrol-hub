@@ -3,6 +3,7 @@ using AccessControlHub.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AccessControlHub.Infrastructure.Migrations
 {
     [DbContext(typeof(AccessControlHubDbContext))]
-    partial class AccessControlHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251216042516_AddUniqueIndexToUserEmail")]
+    partial class AddUniqueIndexToUserEmail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

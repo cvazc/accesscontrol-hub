@@ -2,6 +2,9 @@ using AccessControlHub.Application.Dtos.Users;
 using AccessControlHub.Application.Interfaces;
 using AccessControlHub.Domain.Entities;
 using AccessControlHub.Domain.Repositories;
+using System.Security.Cryptography;
+using System.Text;
+using AccessControlHub.Domain.Exceptions;
 
 namespace AccessControlHub.Application.Services;
 
@@ -45,11 +48,20 @@ public class UserService : IUserService
 
     public async Task<UserResponseDto> CreateAsync(CreateUserDto input)
     {
+        var passwordHash = HashPassword(input.Password);
+
         var newUser = new User
         {
             Name = input.Name,
-            Email = input.Email
+            Email = input.Email,
+            PasswordHash = passwordHash
         };
+
+        var emailExists = await _userRepository.EmailExistsAsync(input.Email);
+        if (emailExists)
+        {
+            throw new ValidationException("Email already exists");
+        }
 
         var createdUser = await _userRepository.AddAsync(newUser);
 
@@ -91,5 +103,21 @@ public class UserService : IUserService
     public async Task<bool> DeleteAsync(int id)
     {
         return await _userRepository.DeleteAsync(id);
+    }
+
+    private string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+
+        var bytes = Encoding.UTF8.GetBytes(password);
+        var hashBytes = sha256.ComputeHash(bytes);
+
+        var stringBuilder = new StringBuilder();
+        foreach (var b in hashBytes)
+        {
+            stringBuilder.Append(b.ToString("x2"));
+        }
+
+        return stringBuilder.ToString();
     }
 }
