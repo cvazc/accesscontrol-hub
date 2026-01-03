@@ -4,5 +4,5 @@ namespace AccessControlHub.Application.Interfaces.Security;
 
 public interface IAuthService
 {
-    LoginResponseDto Login(LoginRequestDto request);
+    Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
 }

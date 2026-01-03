@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AccessControlHub.Application.Dtos.Auth;
 using AccessControlHub.Application.Interfaces.Security;
+using AccessControlHub.Domain.Repositories;
 
 namespace AccessControlHub.Application.Services.Security;
 
@@ -8,23 +9,31 @@ public class AuthService : IAuthService
 {
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
-    private const string MockEmail = "admin@accesshub.com";
-    private const string MockPasswordHash = "$2a$11$t61n3cXxqA1z4ILPj0/Y8eS0tKKmEbxSjFKR4m.kL7oA5B6IkEKiO";
+    private readonly IUserRepository _userRepository;
 
-    public AuthService(ITokenService tokenService, IPasswordHasher passwordHasher)
+    public AuthService(
+        ITokenService tokenService,
+        IPasswordHasher passwordHasher,
+        IUserRepository userRepository)
     {
         _tokenService = tokenService;
         _passwordHasher = passwordHasher;
+        _userRepository = userRepository;
     }
 
-    public LoginResponseDto Login(LoginRequestDto request)
+    public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
     {
-        if (!string.Equals(request.Email, MockEmail, StringComparison.OrdinalIgnoreCase))
+        var user = await _userRepository.GetByEmailAsync(request.Email);
+
+        if (user is null)
         {
             throw new UnauthorizedAccessException("Invalid credentials");
         }
 
-        var validPassword = _passwordHasher.VerifyPassword(request.Password, MockPasswordHash);
+        var validPassword = _passwordHasher.VerifyPassword(
+            request.Password,
+            user.PasswordHash
+        );
 
         if (!validPassword)
         {
@@ -33,9 +42,9 @@ public class AuthService : IAuthService
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, "1"),
-            new Claim(ClaimTypes.Email, request.Email),
-            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Role, user.Role),
             new Claim("permission", "users.read")
         };
 
